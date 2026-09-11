@@ -60,30 +60,4 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Instalador - Rota da Prosperidade</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center">
-    <div class="bg-slate-800 p-8 rounded-xl shadow-2xl w-full max-w-md border border-slate-700">
-        <h1 class="text-2xl font-bold mb-6 text-amber-400 text-center">Instalador do Sistema</h1>
-        <?php if(isset($msg)) echo "<div class='bg-emerald-600 p-3 rounded mb-4 text-center'>$msg</div>"; ?>
-        <?php if(isset($error)) echo "<div class='bg-red-600 p-3 rounded mb-4'>$error</div>"; ?>
-        <?php if(!isset($msg)): ?>
-        <form method="POST" class="space-y-4">
-            <div><label>Host DB</label><input type="text" name="host" value="localhost" class="w-full p-2 rounded bg-slate-700 text-white" required></div>
-            <div><label>Nome do Banco</label><input type="text" name="db" value="rota_prosperidade" class="w-full p-2 rounded bg-slate-700 text-white" required></div>
-            <div><label>Usuário DB</label><input type="text" name="user" value="root" class="w-full p-2 rounded bg-slate-700 text-white" required></div>
-            <div><label>Senha DB</label><input type="password" name="pass" class="w-full p-2 rounded bg-slate-700 text-white"></div>
-            <hr class="border-slate-600 my-4">
-            <div><label>Usuário Admin</label><input type="text" name="admin_user" value="admin" class="w-full p-2 rounded bg-slate-700 text-white" required></div>
-            <div><label>Senha Admin</label><input type="password" name="admin_pass" class="w-full p-2 rounded bg-slate-700 text-white" required></div>
-            <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 rounded mt-4">Instalar Sistema</button>
-        </form>
-        <?php endif; ?>
-    </div>
-</body>
-</html>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Instalação | Rota da Prosperidade</title><link rel="stylesheet" href="assets/style.css"></head><body class="system-page auth-page"><main class="install-card"><span class="system-kicker">Configuração inicial</span><h1>Prepare o sistema do evento.</h1><p>Conecte o banco de dados e crie o primeiro acesso administrativo.</p><?php if(isset($msg)):?><div class="alert success"><?=$msg?></div><?php endif?><?php if(isset($error)):?><div class="alert error"><?=htmlspecialchars($error,ENT_QUOTES,'UTF-8')?></div><?php endif?><?php if(!isset($msg)):?><form method="post" class="install-form"><h2>Banco de dados</h2><label>Servidor<input name="host" value="localhost" required></label><label>Nome do banco<input name="db" value="rota_prosperidade" required></label><label>Usuário<input name="user" value="root" required></label><label>Senha<input type="password" name="pass"></label><h2>Acesso administrativo</h2><label>Usuário do painel<input name="admin_user" value="admin" required></label><label>Senha do painel<input type="password" name="admin_pass" required minlength="8"></label><button class="primary-button">Instalar e acessar →</button></form><?php endif?></main></body></html>

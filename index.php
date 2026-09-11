@@ -1,36 +1,4 @@
-<?php
-declare(strict_types=1);
-
-if (!is_file(__DIR__ . '/config.php')) {
-    header('Location: install.php');
-    exit;
-}
-
-require __DIR__ . '/config.php';
-
-$formError = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'checkout') {
-    $nome = trim((string) ($_POST['nome'] ?? ''));
-    $email = filter_var($_POST['email'] ?? '', FILTER_VALIDATE_EMAIL);
-    $cpf = preg_replace('/\D+/', '', (string) ($_POST['cpf'] ?? ''));
-    $payment = (string) ($_POST['payment_method'] ?? 'pix');
-    $bonus = isset($_POST['bonus']) ? 1 : 0;
-
-    if ($nome === '' || !$email || strlen($cpf) !== 11 || !in_array($payment, ['pix', 'card'], true)) {
-        $formError = 'Revise seus dados para concluir a inscrição.';
-    } else {
-        $hash = bin2hex(random_bytes(24));
-        $stmt = $pdo->prepare('INSERT INTO tickets (hash, nome, email, cpf, payment_method, upsell) VALUES (?, ?, ?, ?, ?, ?)');
-        $stmt->execute([$hash, $nome, $email, $cpf, $payment, $bonus]);
-        header('Location: ticket.php?hash=' . urlencode($hash));
-        exit;
-    }
-}
-
-function old(string $key): string {
-    return htmlspecialchars((string) ($_POST[$key] ?? ''), ENT_QUOTES, 'UTF-8');
-}
-?>
+<?php declare(strict_types=1); ?>
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -129,20 +97,18 @@ function old(string $key): string {
             <ul><li>Imersão presencial de 02 dias</li><li>Apostila exclusiva da jornada</li><li>Garrafinha oficial do evento</li><li>Conteúdo com foco audiovisual e qualidade</li></ul>
             <p class="offer-disclaimer">*Não haverá outra edição presencial neste valor.</p>
         </div>
-        <form method="post" class="enrollment-card">
-            <input type="hidden" name="action" value="checkout">
-            <span class="form-label">Garanta sua vaga</span>
-            <h3>Preencha seus dados</h3>
+        <aside class="enrollment-card">
+            <span class="form-label">Turma especial de abertura</span>
+            <h3>Garanta sua vaga</h3>
             <div class="price"><del>de R$ 2.490</del><strong><small>R$</small> 397<sup>,00</sup></strong><span>84% de desconto</span></div>
-            <?php if ($formError): ?><p class="form-error" role="alert"><?=htmlspecialchars($formError, ENT_QUOTES, 'UTF-8')?></p><?php endif; ?>
-            <label>Nome completo<input name="nome" required autocomplete="name" value="<?=old('nome')?>" placeholder="Seu nome completo"></label>
-            <label>E-mail<input name="email" type="email" required autocomplete="email" value="<?=old('email')?>" placeholder="voce@email.com"></label>
-            <label>CPF<input name="cpf" id="cpf" required inputmode="numeric" maxlength="14" value="<?=old('cpf')?>" placeholder="000.000.000-00"></label>
-            <fieldset><legend>Forma de pagamento</legend><label class="payment-option"><input type="radio" name="payment_method" value="pix" checked><span><b>PIX</b><small>Aprovação rápida</small></span></label><label class="payment-option"><input type="radio" name="payment_method" value="card"><span><b>Cartão</b><small>Pagamento seguro</small></span></label></fieldset>
-            <label class="bonus"><input type="checkbox" name="bonus" value="1"><span><b>Bônus especial</b><small>Adicione a experiência complementar</small></span><strong>+ R$ 1,00</strong></label>
-            <button class="primary-button submit-button" type="submit">Concluir inscrição <span>→</span></button>
-            <small class="secure">🔒 Seus dados estão protegidos</small>
-        </form>
+            <div class="included-list">
+                <p><span>✓</span> Imersão presencial de 02 dias</p>
+                <p><span>✓</span> Garrafinha + apostila exclusiva</p>
+                <p><span>✓</span> Acesso aos materiais da experiência</p>
+            </div>
+            <a class="primary-button submit-button" href="checkout.php">Quero garantir a oferta <span>→</span></a>
+            <small class="secure">🔒 Inscrição em ambiente seguro</small>
+        </aside>
     </section>
 </main>
 
@@ -152,11 +118,6 @@ document.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener(
     const target = document.querySelector(link.getAttribute('href'));
     if (target) { event.preventDefault(); target.scrollIntoView({behavior: 'smooth'}); }
 }));
-document.querySelector('#cpf')?.addEventListener('input', event => {
-    let value = event.target.value.replace(/\D/g, '').slice(0, 11);
-    value = value.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    event.target.value = value;
-});
 const observed = document.querySelectorAll('.questions li, .journey-grid article, .speaker-copy');
 const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.target.classList.toggle('is-visible', entry.isIntersecting)), {threshold: .15});
 observed.forEach(element => observer.observe(element));
