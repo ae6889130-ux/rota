@@ -1,141 +1,165 @@
 <?php
-if(!file_exists('config.php')) { header('Location: install.php'); exit; }
-require 'config.php';
+declare(strict_types=1);
 
-if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action']) && $_POST['action'] == 'checkout') {
-    $nome = $_POST['nome'];
-    $email = $_POST['email'];
-    $cpf = $_POST['cpf'];
-    $payment = $_POST['payment_method'];
-    $upsell = isset($_POST['upsell']) ? 1 : 0;
-    $hash = md5(uniqid($cpf, true));
-    
-    $stmt = $pdo->prepare("INSERT INTO tickets (hash, nome, email, cpf, payment_method, upsell) VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->execute([$hash, $nome, $email, $cpf, $payment, $upsell]);
-    
-    header("Location: ticket.php?hash=$hash");
+if (!is_file(__DIR__ . '/config.php')) {
+    header('Location: install.php');
     exit;
 }
+
+require __DIR__ . '/config.php';
+
+$formError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'checkout') {
+    $nome = trim((string) ($_POST['nome'] ?? ''));
+    $email = filter_var($_POST['email'] ?? '', FILTER_VALIDATE_EMAIL);
+    $cpf = preg_replace('/\D+/', '', (string) ($_POST['cpf'] ?? ''));
+    $payment = (string) ($_POST['payment_method'] ?? 'pix');
+    $bonus = isset($_POST['bonus']) ? 1 : 0;
+
+    if ($nome === '' || !$email || strlen($cpf) !== 11 || !in_array($payment, ['pix', 'card'], true)) {
+        $formError = 'Revise seus dados para concluir a inscrição.';
+    } else {
+        $hash = bin2hex(random_bytes(24));
+        $stmt = $pdo->prepare('INSERT INTO tickets (hash, nome, email, cpf, payment_method, upsell) VALUES (?, ?, ?, ?, ?, ?)');
+        $stmt->execute([$hash, $nome, $email, $cpf, $payment, $bonus]);
+        header('Location: ticket.php?hash=' . urlencode($hash));
+        exit;
+    }
+}
+
+function old(string $key): string {
+    return htmlspecialchars((string) ($_POST[$key] ?? ''), ENT_QUOTES, 'UTF-8');
+}
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR" class="scroll-smooth">
+<!doctype html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rota da Prosperidade - Dra. Sonia Onuki</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .hero-bg { background: radial-gradient(circle at top, #11281e 0%, #0f172a 100%); }
-        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Rota da Prosperidade: dois dias para alinhar identidade, propósito, finanças e negócios aos planos de Deus.">
+    <title>Rota da Prosperidade | Dra. Sonia Onuki</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
 </head>
-<body class="bg-slate-900 text-slate-300 font-sans antialiased">
-    <!-- Header -->
-    <header class="py-6 px-4 md:px-12 flex justify-between items-center sticky top-0 bg-slate-900/90 backdrop-blur z-50 border-b border-slate-800">
-        <img src="https://i.imgur.com/lZRM8gM.png" alt="Logo Rota da Prosperidade" class="h-10">
-        <a href="#checkout" class="bg-amber-400 hover:bg-amber-500 text-slate-900 px-6 py-2 rounded-full font-bold transition">Garantir Vaga</a>
-    </header>
+<body class="landing-page">
+<header class="site-header">
+    <a class="logo" href="#inicio" aria-label="Rota da Prosperidade — início">
+        <img src="https://i.imgur.com/lZRM8gM.png" alt="Rota da Prosperidade">
+    </a>
+    <nav aria-label="Navegação principal">
+        <a href="#experiencia">A experiência</a>
+        <a href="#sonia">Dra. Sonia</a>
+        <a class="header-cta" href="#inscricao">Quero participar</a>
+    </nav>
+</header>
 
-    <!-- Hero Section -->
-    <section class="hero-bg py-20 px-4">
-        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div>
-                <span class="text-amber-400 font-semibold tracking-widest text-sm uppercase">Imersão Presencial • 18 e 19 Set 2026</span>
-                <h1 class="text-4xl md:text-6xl font-bold text-white mt-4 mb-6 leading-tight">
-                    Alinhe Identidade, Propósito e Finanças aos <span class="text-emerald-400">Planos de Deus</span>
-                </h1>
-                <p class="text-lg text-slate-400 mb-8">
-                    Um planner que te levará a caminhar com Deus. O mapa para orientar sua nova jornada de prosperidade em 2027.
-                </p>
-                <a href="#checkout" class="inline-block bg-emerald-500 hover:bg-emerald-600 text-white text-xl font-bold px-8 py-4 rounded-lg shadow-lg shadow-emerald-500/30 transition">
-                    Quero Transformar Meu 2027
-                </a>
+<main>
+    <section class="landing-hero" id="inicio">
+        <div class="hero-content">
+            <span class="pill">Turma especial de abertura</span>
+            <p class="hero-question">Você conhece a rota que Deus preparou para a sua prosperidade?</p>
+            <h1>Prepare o agora.<br><em>Esteja pronto para 2027.</em></h1>
+            <p class="hero-lead">Uma imersão de <strong>02 dias</strong> para alinhar identidade, propósito, finanças e negócios aos planos de Deus.</p>
+            <div class="hero-actions">
+                <a class="primary-button" href="#inscricao">Quero investir em mim <span>→</span></a>
+                <span class="unique-offer">✦ Oferta única*</span>
             </div>
-            <div class="relative">
-                <img src="https://i.imgur.com/RXu3kSY.jpeg" alt="Dra. Sonia Onuki" class="rounded-2xl shadow-2xl border border-slate-700 relative z-10 w-full object-cover h-[500px]">
-                <div class="absolute inset-0 bg-emerald-500 blur-[100px] opacity-20 -z-10 rounded-full"></div>
+            <div class="event-meta">
+                <span><b>18—19</b> SET 2026</span>
+                <span><b>2 dias</b> de imersão presencial</span>
             </div>
+        </div>
+        <div class="hero-visual" aria-label="Dra. Sonia Onuki">
+            <div class="image-frame"><img src="https://i.imgur.com/RXu3kSY.jpeg" alt="Dra. Sonia Onuki" fetchpriority="high"></div>
+            <div class="floating-card"><small>Rota da Prosperidade</small><strong>Corpo. Alma.<br>Espírito.</strong></div>
         </div>
     </section>
 
-    <!-- O Que Você Vai Aprender -->
-    <section class="py-20 px-4 bg-slate-950">
-        <div class="max-w-4xl mx-auto">
-            <h2 class="text-3xl font-bold text-white text-center mb-12">O Que Você Vai Aprender e Fazer?</h2>
-            <div class="grid md:grid-cols-2 gap-6">
-                <div class="glass-panel p-6 rounded-xl border border-slate-800">
-                    <h3 class="text-amber-400 font-bold mb-2">01. Mapeamento 2026</h3>
-                    <p class="text-sm">Mapeamento do seu ano de 2026, celebrar resultados e corrigir a rota.</p>
-                </div>
-                <div class="glass-panel p-6 rounded-xl border border-slate-800">
-                    <h3 class="text-amber-400 font-bold mb-2">02. Propósito de Deus</h3>
-                    <p class="text-sm">Sua prosperidade intimamente ligada ao seu propósito.</p>
-                </div>
-                <div class="glass-panel p-6 rounded-xl border border-slate-800">
-                    <h3 class="text-amber-400 font-bold mb-2">03. Obras Consumadas</h3>
-                    <p class="text-sm">Entender sua dimensão Corpo, Alma e Espírito para usufruir na totalidade.</p>
-                </div>
-                <div class="glass-panel p-6 rounded-xl border border-slate-800">
-                    <h3 class="text-amber-400 font-bold mb-2">04. Business as Mission (BAM)</h3>
-                    <p class="text-sm">Projetar planejamento nos 4 pilares: econômico, social, ambiental e espiritual.</p>
-                </div>
-            </div>
+    <section class="reflection" id="experiencia">
+        <div class="section-heading">
+            <span class="kicker">Um convite para reposicionar a vida</span>
+            <h2>Seu 2026 está como <em>desejado?</em></h2>
+            <p>Este é o seu convite para pausar, celebrar, corrigir a rota e construir sua prosperidade — <strong>com Deus no centro.</strong></p>
+        </div>
+        <ol class="questions">
+            <li><span>01</span><p>Você tem vivido em estado de graça ou sofrimento?</p></li>
+            <li><span>02</span><p>Você escolhe o que quer ou o dinheiro escolhe por você?</p></li>
+            <li><span>03</span><p>As prioridades das suas decisões estão alinhadas ao seu sucesso?</p></li>
+        </ol>
+    </section>
+
+    <section class="manifesto">
+        <span>Uma nova perspectiva</span>
+        <blockquote>“Não corra atrás de dinheiro.<br><em>Colha resultados.</em>”</blockquote>
+        <p>Trabalhe o seu ano presente e desenhe o próximo com clareza, responsabilidade, Palavra e oração.</p>
+    </section>
+
+    <section class="journey">
+        <div class="section-heading light-heading">
+            <span class="kicker">O que vamos construir juntos</span>
+            <h2>Fé que ganha forma<br><em>nas suas escolhas.</em></h2>
+        </div>
+        <div class="journey-grid">
+            <article><b>01</b><h3>Identidade</h3><p>Reconheça quem você é diante de Deus e fortaleça a base que sustenta suas decisões.</p></article>
+            <article><b>02</b><h3>Propósito</h3><p>Descubra os <strong>Seus</strong> planos e conecte seus talentos àquilo que Deus confiou a você.</p></article>
+            <article><b>03</b><h3>Finanças</h3><p>Organize recursos e prioridades para que o dinheiro volte a servir — e não conduzir — sua vida.</p></article>
+            <article><b>04</b><h3>Negócios</h3><p>Transforme trabalho e liderança em serviço, impacto e prosperidade com princípios cristãos.</p></article>
+        </div>
+        <div class="experience-note"><strong>Você sairá com direção prática.</strong><span>Conteúdo gravado e entregue com qualidade audiovisual, apostila e materiais para continuar sua jornada.</span></div>
+    </section>
+
+    <section class="speaker" id="sonia">
+        <div class="speaker-photo"><img src="https://i.imgur.com/RXu3kSY.jpeg" alt="Retrato da Dra. Sonia Onuki" loading="lazy"></div>
+        <div class="speaker-copy">
+            <span class="kicker">Sua mentora nesta jornada</span>
+            <h2>Dra. Sonia <em>Onuki</em></h2>
+            <p>Dra. Sonia Onuki é psicóloga, fundadora do Instituto Onukisan e autora do best-seller <cite>Constelação Familiar</cite>. Ao longo de décadas, sua atuação atravessou psicologia, educação, desenvolvimento humano, ambientes empresariais, liderança e relações familiares.</p>
+            <p>Em sua fase atual, sua obra está centrada na restauração familiar alinhada aos princípios cristãos, no cuidado com as Feridas da Alma e no reposicionamento pessoal que orienta identidade, responsabilidade, serviço e reconstrução de vínculos.</p>
+            <blockquote>“A transformação pode ganhar forma na rotina, nas escolhas, na oração, na Palavra e na maneira de viver cada dia diante de Deus.”</blockquote>
         </div>
     </section>
 
-    <!-- Checkout Integrado -->
-    <section id="checkout" class="py-20 px-4">
-        <div class="max-w-3xl mx-auto glass-panel p-8 rounded-2xl border border-slate-700 shadow-2xl">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-white mb-2">Finalize sua Inscrição</h2>
-                <p>Ingresso Principal: R$ 297,00</p>
-            </div>
-
-            <form method="POST" class="space-y-6">
-                <input type="hidden" name="action" value="checkout">
-                
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm mb-1 text-slate-400">Nome Completo</label>
-                        <input type="text" name="nome" required class="w-full bg-slate-800 border border-slate-600 rounded p-3 text-white focus:border-amber-400 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm mb-1 text-slate-400">E-mail</label>
-                        <input type="email" name="email" required class="w-full bg-slate-800 border border-slate-600 rounded p-3 text-white focus:border-amber-400 outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm mb-1 text-slate-400">CPF</label>
-                    <input type="text" name="cpf" required class="w-full bg-slate-800 border border-slate-600 rounded p-3 text-white focus:border-amber-400 outline-none">
-                </div>
-
-                <!-- Order Bump / Upsell -->
-                <div class="bg-emerald-900/30 border border-emerald-500/50 rounded-lg p-4 flex gap-4 items-start">
-                    <input type="checkbox" name="upsell" id="upsell" class="mt-1 w-5 h-5 accent-emerald-500">
-                    <label for="upsell" class="cursor-pointer">
-                        <span class="block text-amber-400 font-bold">Sim, quero adicionar a Consultoria Pós-Evento (+ 60x R$ 39,00)</span>
-                        <span class="text-sm text-slate-300">Acompanhamento exclusivo para aplicar o planner na prática em 2027.</span>
-                    </label>
-                </div>
-
-                <!-- Pagamento -->
-                <div>
-                    <label class="block text-sm mb-2 text-slate-400">Método de Pagamento</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <label class="border border-slate-600 rounded p-4 flex items-center gap-2 cursor-pointer hover:border-amber-400 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-400/10">
-                            <input type="radio" name="payment_method" value="pix" checked class="accent-amber-400"> Pix (Aprovação Imediata)
-                        </label>
-                        <label class="border border-slate-600 rounded p-4 flex items-center gap-2 cursor-pointer hover:border-amber-400 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-400/10">
-                            <input type="radio" name="payment_method" value="card" class="accent-amber-400"> Cartão de Crédito
-                        </label>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-lg text-lg transition shadow-lg">
-                    Concluir Inscrição
-                </button>
-            </form>
+    <section class="offer-section" id="inscricao">
+        <div class="offer-copy">
+            <span class="pill">Turma especial de abertura</span>
+            <h2>Você não precisa seguir até 2027 <em>do mesmo jeito.</em></h2>
+            <p>Garanta dois dias de imersão, direção prática e uma experiência preparada para o seu reposicionamento.</p>
+            <ul><li>Imersão presencial de 02 dias</li><li>Apostila exclusiva da jornada</li><li>Garrafinha oficial do evento</li><li>Conteúdo com foco audiovisual e qualidade</li></ul>
+            <p class="offer-disclaimer">*Não haverá outra edição presencial neste valor.</p>
         </div>
+        <form method="post" class="enrollment-card">
+            <input type="hidden" name="action" value="checkout">
+            <span class="form-label">Garanta sua vaga</span>
+            <h3>Preencha seus dados</h3>
+            <div class="price"><del>de R$ 2.490</del><strong><small>R$</small> 397<sup>,00</sup></strong><span>84% de desconto</span></div>
+            <?php if ($formError): ?><p class="form-error" role="alert"><?=htmlspecialchars($formError, ENT_QUOTES, 'UTF-8')?></p><?php endif; ?>
+            <label>Nome completo<input name="nome" required autocomplete="name" value="<?=old('nome')?>" placeholder="Seu nome completo"></label>
+            <label>E-mail<input name="email" type="email" required autocomplete="email" value="<?=old('email')?>" placeholder="voce@email.com"></label>
+            <label>CPF<input name="cpf" id="cpf" required inputmode="numeric" maxlength="14" value="<?=old('cpf')?>" placeholder="000.000.000-00"></label>
+            <fieldset><legend>Forma de pagamento</legend><label class="payment-option"><input type="radio" name="payment_method" value="pix" checked><span><b>PIX</b><small>Aprovação rápida</small></span></label><label class="payment-option"><input type="radio" name="payment_method" value="card"><span><b>Cartão</b><small>Pagamento seguro</small></span></label></fieldset>
+            <label class="bonus"><input type="checkbox" name="bonus" value="1"><span><b>Bônus especial</b><small>Adicione a experiência complementar</small></span><strong>+ R$ 1,00</strong></label>
+            <button class="primary-button submit-button" type="submit">Concluir inscrição <span>→</span></button>
+            <small class="secure">🔒 Seus dados estão protegidos</small>
+        </form>
     </section>
+</main>
+
+<footer><img src="https://i.imgur.com/lZRM8gM.png" alt="Rota da Prosperidade"><p>Rota da Prosperidade © 2026 · Uma experiência Instituto Onukisan</p><a href="#inicio">Voltar ao topo ↑</a></footer>
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener('click', event => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) { event.preventDefault(); target.scrollIntoView({behavior: 'smooth'}); }
+}));
+document.querySelector('#cpf')?.addEventListener('input', event => {
+    let value = event.target.value.replace(/\D/g, '').slice(0, 11);
+    value = value.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    event.target.value = value;
+});
+const observed = document.querySelectorAll('.questions li, .journey-grid article, .speaker-copy');
+const observer = new IntersectionObserver(entries => entries.forEach(entry => entry.target.classList.toggle('is-visible', entry.isIntersecting)), {threshold: .15});
+observed.forEach(element => observer.observe(element));
+</script>
 </body>
 </html>
