@@ -14,7 +14,7 @@
 <body class="landing-page">
 <header class="site-header">
     <a class="logo" href="#inicio" aria-label="Rota da Prosperidade — início">
-        <img src="https://i.imgur.com/lZRM8gM.png" alt="Rota da Prosperidade">
+        <img src="assets/logo.svg" alt="Rota da Prosperidade">
     </a>
     <nav aria-label="Navegação principal">
         <a href="#experiencia">A experiência</a>
@@ -39,9 +39,13 @@
                 <span><b>2 dias</b> de imersão presencial</span>
             </div>
         </div>
-        <div class="hero-visual" aria-label="Dra. Sonia Onuki">
-            <div class="image-frame"><img src="https://i.imgur.com/RXu3kSY.jpeg" alt="Dra. Sonia Onuki" fetchpriority="high"></div>
-            <div class="floating-card"><small>Rota da Prosperidade</small><strong>Corpo. Alma.<br>Espírito.</strong></div>
+        <div class="hero-visual">
+            <div class="portrait-shell">
+                <span class="portrait-number" aria-hidden="true">27</span>
+                <img src="https://i.imgur.com/RXu3kSY.jpeg" alt="Dra. Sonia Onuki, mentora da imersão" width="720" height="900" fetchpriority="high">
+                <div class="portrait-caption"><small>Com</small><strong>Dra. Sonia Onuki</strong><span>Psicóloga · Escritora · Mentora</span></div>
+            </div>
+            <div class="floating-card"><small>Uma jornada integral</small><strong>Corpo. Alma.<br>Espírito.</strong></div>
         </div>
     </section>
 
@@ -79,7 +83,11 @@
     </section>
 
     <section class="speaker" id="sonia">
-        <div class="speaker-photo"><img src="https://i.imgur.com/RXu3kSY.jpeg" alt="Retrato da Dra. Sonia Onuki" loading="lazy"></div>
+        <div class="speaker-profile" aria-label="Credenciais da Dra. Sonia Onuki">
+            <span class="profile-monogram">SO</span>
+            <p>“Prosperidade é viver o propósito de Deus com responsabilidade, serviço e direção.”</p>
+            <dl><div><dt>Atuação</dt><dd>Psicologia e desenvolvimento humano</dd></div><div><dt>Fundadora</dt><dd>Instituto Onukisan</dd></div><div><dt>Autora</dt><dd>Best-seller Constelação Familiar</dd></div></dl>
+        </div>
         <div class="speaker-copy">
             <span class="kicker">Sua mentora nesta jornada</span>
             <h2>Dra. Sonia <em>Onuki</em></h2>
@@ -112,8 +120,9 @@
     </section>
 </main>
 
-<footer><img src="https://i.imgur.com/lZRM8gM.png" alt="Rota da Prosperidade"><p>Rota da Prosperidade © 2026 · Uma experiência Instituto Onukisan</p><a href="#inicio">Voltar ao topo ↑</a></footer>
+<footer><img src="assets/logo.svg" alt="Rota da Prosperidade"><p>Rota da Prosperidade © 2026 · Uma experiência Instituto Onukisan</p><a href="#inicio">Voltar ao topo ↑</a></footer>
 <script>
+document.querySelector('.portrait-shell img')?.addEventListener('error', event => event.currentTarget.closest('.portrait-shell').classList.add('photo-unavailable'));
 document.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener('click', event => {
     const target = document.querySelector(link.getAttribute('href'));
     if (target) { event.preventDefault(); target.scrollIntoView({behavior: 'smooth'}); }

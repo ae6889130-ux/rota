@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Inscrição segura | Rota da Prosperidade</title><link rel="stylesheet" href="assets/style.css"></head>
 <body class="system-page checkout-page">
-<header class="checkout-header"><a href="index.php"><img src="https://i.imgur.com/lZRM8gM.png" alt="Rota da Prosperidade"></a><span><i></i> Ambiente seguro</span></header>
+<header class="checkout-header"><a href="index.php"><img src="assets/logo.svg" alt="Rota da Prosperidade"></a><span><i></i> Ambiente seguro</span></header>
 <main class="checkout-shell">
 <section class="checkout-panel">
 <a class="back-link" href="index.php">← Voltar para o evento</a><span class="system-kicker">Inscrição presencial</span><h1>Você está a um passo da sua nova rota.</h1><p class="checkout-intro">Preencha seus dados abaixo. Seu ingresso com QR Code será gerado ao concluir.</p>
